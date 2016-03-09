@@ -8,14 +8,18 @@ export interface RedditPosts {
     selectedReddit?: string
 }
 
+export const INIT = 'INIT';
 export const SELECT_REDDIT = 'SELECT_REDDIT';
+export const SELECTED_REDDIT = 'SELECTED_REDDIT';
 export const INVALIDATE_REDDIT = 'INVALIDATE_REDDIT';
 export const REQUEST_POSTS = 'REQUEST_POSTS';
 export const RECEIVE_POSTS = 'RECEIVE_POSTS';
 
 export const selectedReddit : Reducer<string> = (state : string = 'Angular 2', action: Action) => {
     switch(action.type) {
-        case SELECT_REDDIT:
+        case SELECTED_REDDIT:
+            console.log(action.type);
+            console.log(action.payload);
             return action.payload;
         default:
             return state;
@@ -26,8 +30,11 @@ const posts : Reducer<RedditPosts> = (state : RedditPosts = {
     isFetching: false,
     didInvalidate: false,
     posts: []
-}, action: Action) => {
-  switch(action.type) {
+}, {type, payload}: Action) => {
+
+    console.log(payload);
+
+  switch(type) {
       case INVALIDATE_REDDIT:
           return Object.assign({}, state, {
               didInvalidate: true
@@ -38,24 +45,37 @@ const posts : Reducer<RedditPosts> = (state : RedditPosts = {
               didInvalidate: false
           });
       case RECEIVE_POSTS:
-          return Object.assign({}, state, {
+          const s = Object.assign({}, state, {
               isFetching: false,
               didInvalidate: false,
-              posts: action.payload.data.children.map(child => child.data),
+              posts: payload.data.children.map(child => child.data),
               lastUpdated: Date.now()
           });
+
+          console.log(`--------`);
+          console.log(s);
+          console.log(`--------`);
+
+          return s;
       default:
           return state;
   }
 };
 
-export const postsByReddit : Reducer<RedditPosts> = (state: {} = {}, action : Action) => {
-    switch (action.type) {
+export const postsByReddit : Reducer<RedditPosts> = (state: {} = {}, {type, payload} : Action) => {
+    console.log(`
+        postsByReddit
+        ${type}
+        ${payload}
+        `);
+
+
+    switch (type) {
         case INVALIDATE_REDDIT:
         case RECEIVE_POSTS:
         case REQUEST_POSTS:
             return Object.assign({}, state, {
-                [action.payload.reddit]: posts(state[action.payload.reddit], action)
+                [payload.reddit]: posts(state[payload.reddit], {type, payload})
             });
         default:
             return state;

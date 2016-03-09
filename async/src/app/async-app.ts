@@ -44,5 +44,4 @@ export class AsyncApp {
 		private viewModel: RedditViewModel,
 		private redditActions: RedditActions
 	){}
-
 }
