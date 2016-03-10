@@ -1,4 +1,4 @@
-import {REQUEST_POSTS, RECEIVE_POSTS, INVALIDATE_REDDIT, SELECT_REDDIT, INIT} from '../reducers/reddit';
+import {RECEIVE_POSTS, SELECT_REDDIT, SELECTED_REDDIT, LOADING} from '../reducers/reddit';
 import {Observable} from 'rxjs/Observable';
 import {Reddit} from '../services/reddit';
 
@@ -7,25 +7,26 @@ export const redditPreMiddleware = function (reddit:Reddit) {
     return (o$:Observable<{type:string, payload:any}>)=> {
         return o$
             .mergeMap(({type, payload})=> {
-                console.log(`Triggering middleware with ${type} and ${payload}`)
                 switch (type) {
-                    case REQUEST_POSTS:
-                        return o$;
-                    case INVALIDATE_REDDIT:
-                        return o$;
                     case SELECT_REDDIT:
-                        return o$
-                            .switchMap<{url:string, data:any}>(
-                                ({payload:url})=>reddit.fetchPosts(url),
-                                ({payload:url}, {data}):{url:string, data:any}=> ({url, data}))
-                            //grr, Webstorm complaining about destructuring
-                            .map((action)=> ({
-                                type: RECEIVE_POSTS,
-                                payload: {
-                                    reddit: action.url,
-                                    data: action.data
-                                }
-                            }));
+                        return Observable.concat(
+                            //isFetching true
+                            Observable.of({type: LOADING}),
+
+                            //wait 2 seconds
+                            Observable.timer(2000),
+
+                            //request posts
+                            reddit.fetchPosts(payload)
+                                .map((body)=>({
+                                    type: RECEIVE_POSTS,
+                                    payload: {reddit: payload, data: body.data}
+                                })),
+
+                            //isFetching false, change selected item
+                            Observable.of({type: SELECTED_REDDIT, payload})
+                        );
+
                     default:
                         return o$;
                 }

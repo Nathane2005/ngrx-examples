@@ -3,7 +3,6 @@ import {ELEMENT_PROBE_PROVIDERS} from 'angular2/platform/common_dom';
 import {AsyncApp} from './async-app';
 import {provideStore, usePreMiddleware, createMiddleware} from '@ngrx/store';
 import {selectedReddit, postsByReddit} from './reducers/reddit';
-import {RedditActions} from './actions/reddit.actions';
 import {Reddit} from './services/reddit';
 import {HTTP_PROVIDERS} from 'angular2/http';
 import {redditPreMiddleware} from './middleware/reddit';
@@ -15,8 +14,7 @@ export function main() {
       HTTP_PROVIDERS,
       provideStore({selectedReddit, postsByReddit}),
       usePreMiddleware(createMiddleware(redditPreMiddleware, [Reddit])),
-      Reddit,
-      RedditActions
+      Reddit
   ])
   .catch(err => console.error(err));
 }
